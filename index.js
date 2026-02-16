@@ -4,37 +4,38 @@ import pg from "pg";
 import env from "dotenv";
 
 const app = express();
-const port = 3000;
 env.config();
 
-const db = new pg.Client({
-  user: process.env.USER,
-  host: process.env.HOST,
-  database: process.env.DATABASE,
-  password: process.env.PASSWORD,
-  port: process.env.PORT,
-})
+const PORT = process.env.PORT || 3000;
+const { Pool } = pg;
 
-db.connect();
-
-let quiz = [];
-
-db.query("SELECT * FROM capitals", (err, res)=>{
-  if(err){
-    console.error("Error executing query", err.stack)
-  }else{
-    quiz = res.rows
-  }
-  db.end();
-})
-
-let totalCorrect = 0;
+const db = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+app.set("view engine", "ejs");
+
+let quiz = [];
+
+async function loadData() {
+  try{
+    const result = await db.query("SELECT * FROM capitals");
+    quiz = result.rows;
+    console.log("✅ Quiz data loaded");
+  }catch(err){
+      console.error("❌ Error loading quiz data", err);
+  }
+}
+
 let currentQuestion = {};
+let totalCorrect = 0;
 
 // Home page
 app.get("/", (req, res) => {
@@ -71,6 +72,7 @@ async function nextQuestion() {
   currentQuestion = randomCountry;
 }
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+app.listen(PORT, async () => {
+  await loadData();
+  console.log(`🚀 Server running on port ${PORT}`);
 });
