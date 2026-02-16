@@ -20,9 +20,9 @@ const db = new Pool({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-app.set("view engine", "ejs");
-
 let quiz = [];
+let currentQuestion = {};
+let totalCorrect = 0;
 
 async function loadData() {
   try{
@@ -33,9 +33,6 @@ async function loadData() {
       console.error("❌ Error loading quiz data", err);
   }
 }
-
-let currentQuestion = {};
-let totalCorrect = 0;
 
 // Home page
 app.get("/", (req, res) => {
