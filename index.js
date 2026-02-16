@@ -66,7 +66,7 @@ app.post("/submit",async (req, res) => {
 
 async function nextQuestion() {
   if (quiz.length === 0) {
-    throw new Error("Quiz data not loaded");
+    console.log("Quiz data not found");
   }
 
   const randomCountry = quiz[Math.floor(Math.random() * quiz.length)];
