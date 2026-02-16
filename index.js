@@ -47,7 +47,7 @@ app.get("/start", async (req, res) => {
 });
 
 // POST
-app.post("/submit", (req, res) => {
+app.post("/submit",async (req, res) => {
   let answer = req.body.answer.trim();
   let isCorrect = false;
   if (currentQuestion.capital.toLowerCase() === answer.toLowerCase()) {
@@ -56,7 +56,7 @@ app.post("/submit", (req, res) => {
     isCorrect = true;
   }
 
-  nextQuestion();
+  await nextQuestion();
   res.render("index.ejs", {
     question: currentQuestion,
     wasCorrect: isCorrect,
@@ -65,6 +65,10 @@ app.post("/submit", (req, res) => {
 });
 
 async function nextQuestion() {
+  if (quiz.length === 0) {
+    throw new Error("Quiz data not loaded");
+  }
+
   const randomCountry = quiz[Math.floor(Math.random() * quiz.length)];
   currentQuestion = randomCountry;
 }
